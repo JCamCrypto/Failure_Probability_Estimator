@@ -20,12 +20,19 @@
 /* LOCAL CONSTANTS, TYPES, ENUM                                                                   */
 /* ---------------------------------------------------------------------------------------------- */
 
-#define C_PARAM_N            1024u
-#define C_PARAM_Q       134217728u
-#define C_PARAM_K               1u
-#define C_PARAM_ETA             1u
-#define C_PARAM_DV             27u
-#define C_PARAM_SIGMA       17961.0
+#if (C_VAL_SECURITY == 80u)
+# define C_PARAM_N             512u
+# define C_PARAM_Q         8399873u
+# define C_PARAM_ETA             1u
+# define C_PARAM_DV              3u
+# define C_PARAM_SIGMA        4605.0
+#elif (C_VAL_SECURITY == 192u)
+# define C_PARAM_N            1024u
+# define C_PARAM_Q       134246401u
+# define C_PARAM_ETA             1u
+# define C_PARAM_DV              3u
+# define C_PARAM_SIGMA       26583.0
+#endif
 
 /* ---------------------------------------------------------------------------------------------- */
 /* LOCAL VARIABLES                                                                                */
@@ -68,7 +75,7 @@ double computeFailureProbabilityOfDLP14
   initCenteredUniformDistribution(C_PARAM_ETA,    pUnif);
   initCompressionErrorDistribution(C_PARAM_DV,    pCompV);
 
-  // Compute the distribution of the error E = r*e + e2 + ev - e1*sk
+  // Compute the distribution of the error E = r*e - e1*sk + e2 + ev
   //  * e, s are sampled from N(sigma)
   //  * r, e1, e2 are sampled from U(eta)
   //  * ev is sampled from CompV
@@ -94,15 +101,25 @@ double computeFailureProbabilityOfDLP14
   // Temp2 is empty
   // n * Temp3 is the distribution of r*e - e1*sk
 
-  // Since n is a power of 4, we use log4(n) pairs of doublings
-  for (size_t i = 1u; i < C_PARAM_N; i <<= 2u)
+  // Since n is a power of 2, we use log2(n) doublings
+  size_t i = 1u;
+  while (C_PARAM_N > i)
   {
     addDistributions(pTemp3, pTemp3, pTemp2);
     saveDistribution(pTemp2, aSaveFile);
     aSaveFile[18u]++;
-    addDistributions(pTemp2, pTemp2, pTemp3);
-    saveDistribution(pTemp3, aSaveFile);
-    aSaveFile[18u]++;
+    i <<= 1u;
+    if (C_PARAM_N > i) {
+      addDistributions(pTemp2, pTemp2, pTemp3);
+      saveDistribution(pTemp3, aSaveFile);
+      aSaveFile[18u]++;
+      i <<= 1u;
+    }
+    else
+    {
+      // After the loop, we expect the result to be in Temp3
+      copyDistribution(pTemp2, pTemp3);
+    }
   }
 
   // Temp1 is empty
@@ -111,16 +128,17 @@ double computeFailureProbabilityOfDLP14
 
   addDistributions(pUnif, pCompV, pTemp2);
   saveDistribution(pTemp2, aSaveFile);
-  aSaveFile[18u] = '0';
+  aSaveFile[18u]++;
 
   // Temp1 is empty
   // Temp2 is the distribution of e2 + ev
-  // Temp3 is the distribution of e*y - <s|e1+eu>
+  // Temp3 is the distribution of r*e - e1*sk
 
   addDistributions(pTemp2, pTemp3, pTemp1);
+  aSaveFile[18u] = '0';
   saveDistribution(pTemp1, aSaveFile);
   
-  // Temp1 is the distribution of the coefficients of E = r*e + e2 + ev - e1*sk
+  // Temp1 is the distribution of the coefficients of E = r*e - e1*sk + e2 + ev
   // Temp2 is empty
   // Temp3 is empty
 

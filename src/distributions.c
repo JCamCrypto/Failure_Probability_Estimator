@@ -24,7 +24,7 @@
 /* ---------------------------------------------------------------------------------------------- */
 
 #define C_LEN_ARRAYS  ((gModulus / 2u) + 2u)    //!< Length of the arrays storing distributions
-#define C_LEN_THREADS 96u                       //!< Number of threads for parallel operations
+#define C_LEN_THREADS 12u                       //!< Number of threads for parallel operations
 #define C_OFS_BOUND   ((gModulus / 2u) + 1u)    //!< Offset to the bound on the distribution
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -159,6 +159,22 @@ double computeRoundingToOneProbability
   }
 
   return result;
+}
+
+/**************************************************************************************************/
+/** \implements copyDistribution
+ * 
+ **************************************************************************************************/
+void copyDistribution
+(
+  TPDistribution xpInput,
+  TPDistribution xpOutput
+)
+{
+  for (size_t k = 0u; k < C_LEN_ARRAYS; k++)
+  {
+    xpOutput[k] = xpInput[k];
+  }
 }
 
 /**************************************************************************************************/
@@ -336,7 +352,7 @@ void loadDistribution
 {
   FILE* pFile = fopen(filename, "rb");
 
-  fread(xpDistribution, sizeof(double), C_LEN_ARRAYS, pFile);
+  printf("%zu\n", fread(xpDistribution, sizeof(double), C_LEN_ARRAYS, pFile));
 
   fclose(pFile);
 }

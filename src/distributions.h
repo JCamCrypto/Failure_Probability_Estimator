@@ -66,6 +66,19 @@ double computeRoundingToOneProbability
 );
 
 /**************************************************************************************************/
+/** \brief  Copy a distribution from a buffer into another one
+ *
+ * \param[in]       xpInput                 The distribution to copy
+ * \param[out]      xpOutput                The destination buffer
+ *
+ **************************************************************************************************/
+void copyDistribution
+(
+  TPDistribution xpInput,
+  TPDistribution xpOutput
+);
+
+/**************************************************************************************************/
 /** \brief  Initialize a centered binomial distribution
  *
  * \param[in]       xEta                    The parameter of the distribution

@@ -18,7 +18,15 @@
 /* CONSTANTS, TYPES, ENUM                                                                         */
 /* ---------------------------------------------------------------------------------------------- */
 
-#define C_NAME_SCHEME "DLP14"
+#define C_VAL_SECURITY  80u       //!< Must be in {80, 192}
+
+#if (C_VAL_SECURITY == 80u)
+# define C_NAME_SCHEME "DLP14-80"
+#elif (C_VAL_SECURITY == 192u)
+# define C_NAME_SCHEME "DLP14-192"
+#else
+# error "The security level of DLP14 must be in {80, 192}."
+#endif
 
 /* ---------------------------------------------------------------------------------------------- */
 /* VARIABLES                                                                                      */

@@ -29,7 +29,7 @@ SCHEME_NAME   := ml-kem
 SRCS_H	:= src/distributions.h src/schemes/$(SCHEME_NAME).h
 SRCS_C	:= src/distributions.c src/schemes/$(SCHEME_NAME).c src/main.c
 
-BUILD_PATH			:= $(PWD)/build
+BUILD_PATH			:= build
 BUILD_OBJ_PATH  := $(BUILD_PATH)/obj
 $(BUILD_PATH):
 	mkdir -p $(BUILD_OBJ_PATH)
@@ -105,7 +105,7 @@ main: $(BUILD_PATH)/main
 .PHONY: run
 run: main
 	mkdir -p saved
-	$(BUILD_PATH)/main
+	./$(BUILD_PATH)/main
 
 .PHONY: clean
 clean:
