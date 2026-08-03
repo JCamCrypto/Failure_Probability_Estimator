@@ -1,14 +1,14 @@
 /**************************************************************************************************/
-/** \brief    Compute the failure probability in ML-KEM
- * 
+/** \brief    Compute the failure probability in CKKS19
+ *
  *  \author   Julien CAM
- * 
+ *
  *  \date     2025/09/22
  *
  *  \file
  **************************************************************************************************/
-#ifndef MLKEM_H
-#define MLKEM_H
+#ifndef CKKS19_H
+#define CKKS19_H
 
 /* ---------------------------------------------------------------------------------------------- */
 /* IMPORTS                                                                                        */
@@ -18,17 +18,9 @@
 /* CONSTANTS, TYPES, ENUM                                                                         */
 /* ---------------------------------------------------------------------------------------------- */
 
-#define C_VAL_SECURITY  128u  //!< Must be in {128, 192, 256}
+#define C_NAME_SCHEME "CKKS19"
 
-#if (C_VAL_SECURITY == 128u)
-# define C_NAME_SCHEME "ML-KEM-512"
-#elif (C_VAL_SECURITY == 192u)
-# define C_NAME_SCHEME "ML-KEM-768"
-#elif (C_VAL_SECURITY == 256u)
-# define C_NAME_SCHEME "ML-KEM-1024"
-#else
-# error "The security level of ML-KEM must be in {128, 192, 256}."
-#endif
+#define C_COMPUTE_FAILURE_PROBABILITY computeFailureProbabilityOfCKKS19
 
 /* ---------------------------------------------------------------------------------------------- */
 /* VARIABLES                                                                                      */
@@ -39,17 +31,17 @@
 /* ---------------------------------------------------------------------------------------------- */
 
 /**************************************************************************************************/
-/** \brief  Compute the failure probability of ML-KEM
+/** \brief  Compute the failure probability of CKKS19
  *
  *
  *  \return The failure probability
  **************************************************************************************************/
-double computeFailureProbabilityOfMLKEM
+double computeFailureProbabilityOfCKKS19
 (
   void
 );
 
-#endif // MLKEM_H
+#endif // CKKS19_H
 /* ---------------------------------------------------------------------------------------------- */
 /* END OF FILE                                                                                    */
 /* ---------------------------------------------------------------------------------------------- */

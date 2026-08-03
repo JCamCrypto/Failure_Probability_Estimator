@@ -1,14 +1,14 @@
 /**************************************************************************************************/
-/** \brief    Compute the failure probability in ID-ML-KEM_MNTRU
- * 
+/** \brief    Compute the failure probability in ML-KEM
+ *
  *  \author   Julien CAM
- * 
+ *
  *  \date     2025/09/22
  *
  *  \file
  **************************************************************************************************/
-#ifndef IDMLKEM_MNTRU_H
-#define IDMLKEM_MNTRU_H
+#ifndef MLKEM_H
+#define MLKEM_H
 
 /* ---------------------------------------------------------------------------------------------- */
 /* IMPORTS                                                                                        */
@@ -18,7 +18,19 @@
 /* CONSTANTS, TYPES, ENUM                                                                         */
 /* ---------------------------------------------------------------------------------------------- */
 
-#define C_NAME_SCHEME "ID-ML-KEM_MNTRU"
+#define C_VAL_SECURITY  128u  //!< Must be in {128, 192, 256}
+
+#if (C_VAL_SECURITY == 128u)
+# define C_NAME_SCHEME "ML-KEM-512"
+#elif (C_VAL_SECURITY == 192u)
+# define C_NAME_SCHEME "ML-KEM-768"
+#elif (C_VAL_SECURITY == 256u)
+# define C_NAME_SCHEME "ML-KEM-1024"
+#else
+# error "The security level of ML-KEM must be in {128, 192, 256}."
+#endif
+
+#define C_COMPUTE_FAILURE_PROBABILITY computeFailureProbabilityOfMLKEM
 
 /* ---------------------------------------------------------------------------------------------- */
 /* VARIABLES                                                                                      */
@@ -29,17 +41,17 @@
 /* ---------------------------------------------------------------------------------------------- */
 
 /**************************************************************************************************/
-/** \brief  Compute the failure probability of ID-ML-KEM_MNTRU
+/** \brief  Compute the failure probability of ML-KEM
  *
  *
  *  \return The failure probability
  **************************************************************************************************/
-double computeFailureProbabilityOfIDMLKEM
+double computeFailureProbabilityOfMLKEM
 (
   void
 );
 
-#endif // IDMLKEM_MNTRU_H
+#endif // MLKEM_H
 /* ---------------------------------------------------------------------------------------------- */
 /* END OF FILE                                                                                    */
 /* ---------------------------------------------------------------------------------------------- */

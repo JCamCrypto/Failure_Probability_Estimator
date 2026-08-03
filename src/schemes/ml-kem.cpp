@@ -1,8 +1,8 @@
 /**************************************************************************************************/
 /** \brief    Compute the failure probability in ML-KEM
- * 
+ *
  *  \author   Julien CAM
- * 
+ *
  *  \date     2025/09/22
  *
  *  \file
@@ -12,9 +12,9 @@
 /* IMPORTS                                                                                        */
 /* ---------------------------------------------------------------------------------------------- */
 
-#include "../distributions.h"
+#include "../distributions.hpp"
 
-#include "ml-kem.h"
+#include "ml-kem.hpp"
 
 /* ---------------------------------------------------------------------------------------------- */
 /* LOCAL CONSTANTS, TYPES, ENUM                                                                   */
@@ -82,107 +82,65 @@ double computeFailureProbabilityOfMLKEM
   TPDistribution pTemp2 = allocateDistribution();
   TPDistribution pTemp3 = allocateDistribution();
 
-  char aSaveFile[] = "saved/DistributionA.save";
-
   initCenteredBinomialDistribution(C_PARAM_ETA1,  pCBD1);
   initCenteredBinomialDistribution(C_PARAM_ETA2,  pCBD2);
   initCompressionErrorDistribution(C_PARAM_DU,    pCompU);
   initCompressionErrorDistribution(C_PARAM_DV,    pCompV);
 
-  // Compute the distribution of the error E = <e|y> - <s|e1+eu> + e2 + ev
+  // The final error polynomial is computed as:
+  //    E = <e|y> - <s|e1+eu> + e2 + ev
+  // where:
   //  * e, s and y are sampled from CBD(eta1)
   //  * e1, e2 are sampled from CBD(eta2)
   //  * eu is sampled from CompU
   //  * ev is sampled from CompV
-
-  // Temp1 is empty
-  // Temp2 is empty
-  // Temp3 is empty
+  // So, the distribution of each coefficient of E can be computed as:
+  //    D = k * n * [CBD(eta1) * CBD(eta1) + CBD(eta1) * [CBD(eta2) + CompU]] + CBD(eta2) + CompV
 
   multiplyDistributions(pCBD1, pCBD1, pTemp1);
-  saveDistribution(pTemp1, aSaveFile);
-  aSaveFile[18u]++;
 
-  // k * n * Temp1 is the distribution of <e|y>
-  // Temp2 is empty
-  // Temp3 is empty
+  // Temp1 = CBD(eta1) * CBD(eta1)
 
   addDistributions(pCBD2, pCompU, pTemp2);
-  saveDistribution(pTemp2, aSaveFile);
-  aSaveFile[18u]++;
+  freeDistribution(pCompU);
 
-  // k * n * Temp1 is the distribution of <e|y>
-  // Temp2 is the distribution of e1 + eu
-  // Temp3 is empty
+  // Temp1 = CBD(eta1) * CBD(eta1)
+  // Temp2 = CBD(eta2) + CompU
 
   multiplyDistributions(pCBD1, pTemp2, pTemp3);
-  saveDistribution(pTemp3, aSaveFile);
-  aSaveFile[18u]++;
+  freeDistribution(pCBD1);
 
-  // k * n * Temp1 is the distribution of <e|y>
-  // Temp2 is empty
-  // k * n * Temp3 is the distribution of <s|e1+eu>
+  // Temp1 = CBD(eta1) * CBD(eta1)
+  // Temp3 = CBD(eta1) * [CBD(eta2) + CompU]
 
   addDistributions(pTemp1, pTemp3, pTemp2);
-  saveDistribution(pTemp2, aSaveFile);
-  aSaveFile[18u]++;
 
-  // Temp1 is empty
-  // k * n * Temp2 is the distribution of <e|y> + <s|e1+eu> = <e|y> - <s|e1+eu>   (by symmetry of s)
-  // Temp3 is empty
+  // Temp2 = CBD(eta1) * CBD(eta1) + CBD(eta1) * [CBD(eta2) + CompU]
 
-#if (C_PARAM_K == 2u)
-  addDistributions(pTemp2, pTemp2, pTemp3);
-#elif (C_PARAM_K == 3u)
-  addDistributions(pTemp2, pTemp2, pTemp1);
-  addDistributions(pTemp1, pTemp2, pTemp3);
-#elif (C_PARAM_K == 4u)
-  addDistributions(pTemp2, pTemp2, pTemp1);
-  addDistributions(pTemp1, pTemp1, pTemp3);
-#endif
-  saveDistribution(pTemp3, aSaveFile);
-  aSaveFile[18u]++;
+  applyScalarProduct(C_PARAM_K * C_PARAM_N, pTemp2, pTemp3);
 
-  // Temp1 is empty
-  // Temp2 is empty
-  // n * Temp3 is the distribution of <e|y> - <s|e1+eu>
-
-  // Since n is a power of 4, we use log4(n) pairs of doublings
-  for (size_t i = 1u; i < C_PARAM_N; i <<= 2u)
-  {
-    addDistributions(pTemp3, pTemp3, pTemp2);
-    saveDistribution(pTemp2, aSaveFile);
-    aSaveFile[18u]++;
-    addDistributions(pTemp2, pTemp2, pTemp3);
-    saveDistribution(pTemp3, aSaveFile);
-    aSaveFile[18u]++;
-  }
-
-  // Temp1 is empty
-  // Temp2 is empty
-  // Temp3 is the distribution of <e|y> - <s|e1+eu>
+  // Temp3 = k * n * [CBD(eta1) * CBD(eta1) + CBD(eta1) * [CBD(eta2) + CompU]]
 
   addDistributions(pCBD2, pCompV, pTemp2);
-  saveDistribution(pTemp2, aSaveFile);
-  aSaveFile[18u] = '0';
+  freeDistribution(pCBD2);
+  freeDistribution(pCompV);
 
-  // Temp1 is empty
-  // Temp2 is the distribution of e2 + ev
-  // Temp3 is the distribution of <e|y> - <s|e1+eu>
+  // Temp2 = CBD(eta2) + CompV
+  // Temp3 = k * n * [CBD(eta1) * CBD(eta1) + CBD(eta1) * [CBD(eta2) + CompU]]
 
   addDistributions(pTemp2, pTemp3, pTemp1);
-  saveDistribution(pTemp1, aSaveFile);
-  
-  // Temp1 is the distribution of the coefficients of E = <e|y> - <s|e1+eu> + e2 + ev
-  // Temp2 is empty
-  // Temp3 is empty
+  freeDistribution(pTemp2);
+  freeDistribution(pTemp3);
+
+  // Temp1 = D
+
+  saveDistribution(pTemp1, "FinalErrorDistribution.save");
 
   // The probability that one given coefficient of the error polynomial is not rounded to 0
   double failureProbability = computeRoundingToOneProbability(pTemp1);
+  freeDistribution(pTemp1);
   // The probability that all the coefficients of the error polynomial are not rounded to 0
-  failureProbability *= (double) C_PARAM_N;
-
-  return failureProbability;
+  return failureProbability * ((double) C_PARAM_N);
 }
 
 /* ---------------------------------------------------------------------------------------------- */

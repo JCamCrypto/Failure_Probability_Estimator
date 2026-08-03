@@ -1,8 +1,8 @@
 /**************************************************************************************************/
 /** \brief    Display the failure probability in some LWE-based scheme
- * 
+ *
  *  \author   Julien CAM
- * 
+ *
  *  \date     2025/01/15
  *
  *  \file
@@ -15,7 +15,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "schemes/ml-kem.h"
+#include "schemes/ml-kem.hpp"
 
 /* ---------------------------------------------------------------------------------------------- */
 /* LOCAL CONSTANTS, TYPES, ENUM                                                                   */
@@ -49,7 +49,7 @@ int main
   int status = 0;
 
   // The probability that all the coefficients of the error polynomial are not rounded to 0
-  double failureProbability = computeFailureProbabilityOfMLKEM();
+  double failureProbability = C_COMPUTE_FAILURE_PROBABILITY();
   // The log2 of the failure probability
   double log2FailureProbability = log2(failureProbability);
 

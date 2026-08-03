@@ -14,7 +14,65 @@ MAKEFLAGS     += --silent
 .DEFAULT_GOAL := run
 MAKECMDGOALS  ?= $(.DEFAULT_GOAL)
 
-SCHEME_NAME   := ml-kem
+SCHEME        ?= ml-kem
+
+DEVICE        ?= CPU
+
+####################################################################################################
+
+#   #   ###   ####   #####   ###   ####   #      #####   ####
+#   #  #   #  #   #    #    #   #  #   #  #      #      #
+#   #  #####  ####     #    #####  ####   #      ###     ###
+ # #   #   #  #  #     #    #   #  #   #  #      #          #
+  #    #   #  #   #  #####  #   #  ####   #####  #####  ####
+
+####################################################################################################
+
+SRCS          := src/distributions.cpp
+
+# ------------------------------------------------------------------------------------------------ #
+# CPU                                                                                              #
+# ------------------------------------------------------------------------------------------------ #
+ifeq ($(DEVICE),CPU)
+  SRCS        += src/distributions-cpu.cpp
+
+  CC          := $(CXX)
+
+  CFLAGS      += -std=c++11
+
+  CFLAGS      += -Wall -Wextra
+  CFLAGS      += -Wvla
+  CFLAGS      += -Werror
+
+  CFLAGS      += -Ofast
+
+  LDLIBS      += -lm
+
+# ------------------------------------------------------------------------------------------------ #
+# GPU                                                                                              #
+# ------------------------------------------------------------------------------------------------ #
+else ifeq ($(DEVICE),GPU)
+  SRCS        += src/distributions-gpu.cu
+
+  CC          := nvcc
+
+  CFLAGS      += -std=c++11
+
+  CFLAGS      += -Werror all-warnings
+
+  CFLAGS      += -O3
+
+# ------------------------------------------------------------------------------------------------ #
+# Other                                                                                            #
+# ------------------------------------------------------------------------------------------------ #
+else
+	$(error "Unsupported device '$(DEVICE)'. Must be 'CPU' or 'GPU'.")
+endif
+
+BUILD_PATH    := build
+
+SRCS          += src/schemes/$(SCHEME).cpp
+SRCS          += src/main.cpp
 
 ####################################################################################################
 
@@ -26,84 +84,27 @@ SCHEME_NAME   := ml-kem
 
 ####################################################################################################
 
-SRCS_H	:= src/distributions.h src/schemes/$(SCHEME_NAME).h
-SRCS_C	:= src/distributions.c src/schemes/$(SCHEME_NAME).c src/main.c
-
-BUILD_PATH			:= build
-BUILD_OBJ_PATH  := $(BUILD_PATH)/obj
 $(BUILD_PATH):
-	mkdir -p $(BUILD_OBJ_PATH)
+	mkdir -p $(BUILD_PATH)
 
-# $(PWD)/path/to/module.c --> $(BUILD_OBJ_PATH)/path_to_module.o
-C_TO_O = $(addprefix $(BUILD_OBJ_PATH)/,$(subst .c,.o,$(subst /,_,$(foreach src,$1,$(subst $(PWD)/,,$(src))))))
-
-####################################################################################################
-
- ####   ###   #   #  ####   #####  #      #####
-#      #   #  ## ##  #   #    #    #      #
-#      #   #  # # #  ####     #    #      ###
-#      #   #  #   #  #        #    #      #
- ####   ###   #   #  #      #####  #####  #####
+$(BUILD_PATH)/main: $(SRCS) | $(BUILD_PATH)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
 ####################################################################################################
 
-# Options
-CFLAGS  += -std=c99
-CFLAGS  += -Wall -Wextra
-CFLAGS  += -Werror
-
-# Variable Length Array is forbidden
-CFLAGS  += -Wvla
-
-# Optimization level
-CFLAGS	+= -Ofast
-
-define Compile
-	echo 'Compiling  $(<F)...'
-	$(CC) $(CFLAGS) -o $@ -c $<
-endef
-
-define  GenObjRule_C
-$(call C_TO_O,$1): $1 | $(BUILD_PATH)
-	$$(call Compile)
-endef
-
-$(foreach src,$(SRCS_C),$(eval $(call GenObjRule_C,$(src))))
+#####   ###   ####    ###   #####  #####   ####
+  #    #   #  #   #  #      #        #    #
+  #    #####  ####   #  ##  ###      #     ###
+  #    #   #  #  #   #   #  #        #        #
+  #    #   #  #   #   ###   #####    #    ####
 
 ####################################################################################################
-
-#      #####  #   #  #   #
-#        #    ##  #  #  #
-#        #    # # #  ###
-#        #    #  ##  #  #
-#####  #####  #   #  #   #
-
-####################################################################################################
-
-LDFLAGS =
-LDLIBS  = -lm
-
-$(BUILD_PATH)/%: | $(BUILD_PATH)
-	echo 'Linking    $(@F)...'
-	$(CC) $(LDFLAGS) -Xlinker -o $@ $^ $(LDLIBS)
-
-####################################################################################################
-
-#   #  #####   ####   ####
-## ##    #    #      #
-# # #    #     ###   #
-#   #    #        #  #
-#   #  #####  ####    ####
-
-####################################################################################################
-
-$(BUILD_PATH)/main: $(call C_TO_O,$(SRCS_C))
 
 .PHONY: main
 main: $(BUILD_PATH)/main
 
 .PHONY: run
-run: main
+run: $(BUILD_PATH)/main
 	mkdir -p saved
 	./$(BUILD_PATH)/main
 
@@ -113,7 +114,7 @@ clean:
 
 .PHONY: clean-all
 clean-all: clean
-	rm -f saved/Distribution[0A-P].save
+	rm -f FinalErrorDistribution.save
 
 ####################################################################################################
 # END OF FILE                                                                                      #

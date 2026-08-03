@@ -1,14 +1,14 @@
 /**************************************************************************************************/
-/** \brief    Compute the failure probability in CKKS19
- * 
+/** \brief    Compute the failure probability in ID-ML-KEM_MNTRU
+ *
  *  \author   Julien CAM
- * 
+ *
  *  \date     2025/09/22
  *
  *  \file
  **************************************************************************************************/
-#ifndef CKKS19_H
-#define CKKS19_H
+#ifndef IDMLKEM_MNTRU_H
+#define IDMLKEM_MNTRU_H
 
 /* ---------------------------------------------------------------------------------------------- */
 /* IMPORTS                                                                                        */
@@ -18,7 +18,9 @@
 /* CONSTANTS, TYPES, ENUM                                                                         */
 /* ---------------------------------------------------------------------------------------------- */
 
-#define C_NAME_SCHEME "CKKS19"
+#define C_NAME_SCHEME "ID-ML-KEM_MNTRU"
+
+#define C_COMPUTE_FAILURE_PROBABILITY computeFailureProbabilityOfIDMLKEM
 
 /* ---------------------------------------------------------------------------------------------- */
 /* VARIABLES                                                                                      */
@@ -29,17 +31,17 @@
 /* ---------------------------------------------------------------------------------------------- */
 
 /**************************************************************************************************/
-/** \brief  Compute the failure probability of CKKS19
+/** \brief  Compute the failure probability of ID-ML-KEM_MNTRU
  *
  *
  *  \return The failure probability
  **************************************************************************************************/
-double computeFailureProbabilityOfCKKS19
+double computeFailureProbabilityOfIDMLKEM
 (
   void
 );
 
-#endif // CKKS19_H
+#endif // IDMLKEM_MNTRU_H
 /* ---------------------------------------------------------------------------------------------- */
 /* END OF FILE                                                                                    */
 /* ---------------------------------------------------------------------------------------------- */

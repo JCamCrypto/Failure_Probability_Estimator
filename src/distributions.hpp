@@ -1,8 +1,8 @@
 /**************************************************************************************************/
 /** \brief    Computations on symmetric distributions
- * 
+ *
  *  \author   Julien CAM
- * 
+ *
  *  \date     2025/03/26
  *
  *  \file
@@ -52,6 +52,32 @@ void addDistributions
 );
 
 /**************************************************************************************************/
+/** \brief  Allocate a buffer that can be used to store a distribution
+ *
+ * \return  Pointer to the output symmetric distribution
+ *
+ **************************************************************************************************/
+TPDistribution allocateDistribution
+(
+  void
+);
+
+/**************************************************************************************************/
+/** \brief  Compute the scalar of a symmetric distribution by an integer
+ *
+ * \param[in]       xScalar                 The integer
+ * \param[in]       xpDistribution          Pointer to the input symmetric distribution
+ * \param[out]      xpResult                Pointer to where the result must be stored
+ *
+ **************************************************************************************************/
+void applyScalarProduct
+(
+  const size_t xScalar,
+  const TPDistribution xpDistribution,
+  TPDistribution xpResult
+);
+
+/**************************************************************************************************/
 /** \brief  Compute the probability that a random variable X is rounded to 1 when reduced to 0 or 1.
  *          This corresponds to the probability that X is in the interval [q/4, 3q/4]
  *
@@ -76,6 +102,17 @@ void copyDistribution
 (
   TPDistribution xpInput,
   TPDistribution xpOutput
+);
+
+/**************************************************************************************************/
+/** \brief  Free a buffer that could be used to store a distribution
+ *
+ * \param[in]       xpDistribution          Pointer to the symmetric distribution to free
+ *
+ **************************************************************************************************/
+void freeDistribution
+(
+  const TPDistribution xpDistribution
 );
 
 /**************************************************************************************************/
@@ -131,26 +168,15 @@ void initCompressionErrorDistribution
 );
 
 /**************************************************************************************************/
-/** \brief  Allocate a buffer that can be used to store a distribution
- *
- * \return  Pointer to the output symmetric distribution
- *
- **************************************************************************************************/
-TPDistribution allocateDistribution
-(
-  void
-);
-
-/**************************************************************************************************/
 /** \brief  Load a symmetric distribution from a file
  *
- * \param[in]       filename                Name of the file where the distribution is stored
+ * \param[in]       xpFilename              Name of the file where the distribution is stored
  * \param[out]      xpDistribution          Pointer to where the distribution must be stored
  *
  **************************************************************************************************/
 void loadDistribution
 (
-  const char* filename,
+  const char* xpFilename,
   TPDistribution xpDistribution
 );
 

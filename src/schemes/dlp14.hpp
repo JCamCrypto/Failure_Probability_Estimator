@@ -1,8 +1,8 @@
 /**************************************************************************************************/
 /** \brief    Compute the failure probability in DLP14
- * 
+ *
  *  \author   Julien CAM
- * 
+ *
  *  \date     2025/09/22
  *
  *  \file
@@ -27,6 +27,8 @@
 #else
 # error "The security level of DLP14 must be in {80, 192}."
 #endif
+
+#define C_COMPUTE_FAILURE_PROBABILITY computeFailureProbabilityOfDLP14
 
 /* ---------------------------------------------------------------------------------------------- */
 /* VARIABLES                                                                                      */
