@@ -24,12 +24,14 @@
 # define C_PARAM_N             512u
 # define C_PARAM_Q         8399873u
 # define C_PARAM_ETA             1u
+# define C_PARAM_DU             24u
 # define C_PARAM_DV              3u
 # define C_PARAM_SIGMA        4605.0
 #elif (C_VAL_SECURITY == 192u)
 # define C_PARAM_N            1024u
 # define C_PARAM_Q       134246401u
 # define C_PARAM_ETA             1u
+# define C_PARAM_DU             28u
 # define C_PARAM_DV              3u
 # define C_PARAM_SIGMA       26583.0
 #endif
@@ -61,6 +63,7 @@ double computeFailureProbabilityOfDLP14
   void
 )
 {
+  TPDistribution pCompU = allocateDistribution();
   TPDistribution pCompV = allocateDistribution();
   TPDistribution pNorm  = allocateDistribution();
   TPDistribution pUnif  = allocateDistribution();
@@ -71,32 +74,48 @@ double computeFailureProbabilityOfDLP14
 
   initCenteredNormalDistribution(C_PARAM_SIGMA, pNorm);
   initCenteredUniformDistribution(C_PARAM_ETA,  pUnif);
+  initCompressionErrorDistribution(C_PARAM_DU,  pCompU);
   initCompressionErrorDistribution(C_PARAM_DV,  pCompV);
 
   // The final error polynomial is computed as:
-  //    E = r*s1 - e1*s2 + e2 + ev
+  //    E = s1*r - s2*(e1 + eu) + e2 + ev
   // where:
-  //  * r, e1, e2 are sampled from U(eta)
   //  * s1, s2 are sampled from N(sigma)
-  //  * ev is a compression error, resulting from dropping low-order bits of v
+  //  * r, e1, e2 are sampled from U(eta)
+  //  * eu, ev are compression errors, resulting from dropping low-order bits
   // So, the distribution of each coefficient of E can be computed as:
-  //    D = 2 * n * U(eta) * N(sigma) + U(eta) + CompV
+  //    D = n * [N(sigma) * U(eta) + N(sigma) * [U(eta) + CompU]] + U(eta) + CompV
 
-  multiplyDistributions(pUnif, pNorm, pTemp1);
+  multiplyDistributions(pNorm, pUnif, pTemp1);
+
+  // Temp1 = N(sigma) * U(eta)
+
+  addDistributions(pUnif, pCompU, pTemp2);
+  freeDistribution(pCompU);
+
+  // Temp1 = N(sigma) * U(eta)
+  // Temp2 = U(eta) + CompU
+
+  multiplyDistributions(pNorm, pTemp2, pTemp3);
   freeDistribution(pNorm);
 
-  // Temp1 = U(eta) * N(sigma)
+  // Temp1 = N(sigma) * U(eta)
+  // Temp3 = N(sigma) * [U(eta) + CompU]
 
-  applyScalarProduct(2u * C_PARAM_N, pTemp1, pTemp2);
+  addDistributions(pTemp1, pTemp3, pTemp2);
 
-  // Temp2 = 2 * n * U(eta) * N(sigma)
+  // Temp2 = N(sigma) * U(eta) + N(sigma) * [U(eta) + CompU]
 
-  addDistributions(pUnif, pCompV, pTemp3);
+  applyScalarProduct(C_PARAM_N, pTemp2, pTemp3);
+
+  // Temp3 = n * [N(sigma) * U(eta) + N(sigma) * [U(eta) + CompU]]
+
+  addDistributions(pUnif, pCompV, pTemp2);
   freeDistribution(pUnif);
   freeDistribution(pCompV);
 
-  // Temp2 = 2 * n * U(eta) * N(sigma)
-  // Temp3 = U(eta) + CompV
+  // Temp2 = U(eta) + CompV
+  // Temp3 = n * [N(sigma) * U(eta) + N(sigma) * [U(eta) + CompU]]
 
   addDistributions(pTemp2, pTemp3, pTemp1);
   freeDistribution(pTemp2);
